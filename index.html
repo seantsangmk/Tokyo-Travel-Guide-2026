@@ -197,6 +197,76 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
+        .location-toggle {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #667eea;
+        }
+
+        .toggle-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #667eea;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .current-location-info {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+            font-size: 0.9em;
+        }
+
+        .nav-button:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-button.hotel-route {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
         @media (max-width: 768px) {
             .location-grid {
                 grid-template-columns: 1fr;
@@ -219,9 +289,14 @@
     <div class="container">
         <div class="header">
             <h1>🗾 東京旅遊景點導航</h1>
-            <p>從日比谷雷姆飯店出發</p>
+            <p id="headerText">正在獲取你的位置...</p>
+            <div class="location-toggle">
+                <button class="toggle-btn active" id="currentLocationBtn" onclick="switchToCurrentLocation()">📍 從當前位置出發</button>
+                <button class="toggle-btn" id="hotelLocationBtn" onclick="switchToHotel()">🏨 從酒店出發</button>
+                <div class="current-location-info" id="currentLocationInfo">正在定位中...</div>
+            </div>
             <div class="hotel-info">
-                <strong>🏨 住宿地點：</strong>日比谷雷姆飯店<br>
+                <strong>🏨 住宿酒店：</strong>日比谷雷姆飯店<br>
                 <small>📍 座標：35.6726062, 139.7596706</small>
             </div>
         </div>
@@ -248,6 +323,75 @@
         // Hotel coordinates (日比谷雷姆飯店)
         const HOTEL_COORDS = { lat: 35.6726062, lng: 139.7596706 };
         const HOTEL_NAME = "日比谷雷姆飯店";
+        
+        // User's current location
+        let USER_CURRENT_COORDS = null;
+        let useCurrentLocation = true; // Default to user's current location
+        let allLocationsData = [];
+
+        // Get user's current location
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        USER_CURRENT_COORDS = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        document.getElementById('currentLocationInfo').innerHTML = 
+                            `<strong>📍 你的位置：</strong>${USER_CURRENT_COORDS.lat.toFixed(6)}, ${USER_CURRENT_COORDS.lng.toFixed(6)}`;
+                        document.getElementById('headerText').textContent = '從你的當前位置出發';
+                        
+                        // Recalculate distances and re-render
+                        if (allLocationsData.length > 0) {
+                            updateDistancesAndRender();
+                        }
+                    },
+                    (error) => {
+                        console.error('無法獲取位置:', error);
+                        document.getElementById('currentLocationInfo').innerHTML = 
+                            '<span style="color: #c62828;">❌ 無法獲取位置，自動切換到酒店出發</span>';
+                        switchToHotel();
+                    }
+                );
+            } else {
+                document.getElementById('currentLocationInfo').innerHTML = 
+                    '<span style="color: #c62828;">❌ 瀏覽器不支援定位</span>';
+                switchToHotel();
+            }
+        }
+
+        // Switch between current location and hotel
+        function switchToCurrentLocation() {
+            if (!USER_CURRENT_COORDS) {
+                alert('無法獲取你的當前位置，請確保已授權位置訪問');
+                return;
+            }
+            useCurrentLocation = true;
+            document.getElementById('currentLocationBtn').classList.add('active');
+            document.getElementById('hotelLocationBtn').classList.remove('active');
+            document.getElementById('headerText').textContent = '從你的當前位置出發';
+            updateDistancesAndRender();
+        }
+
+        function switchToHotel() {
+            useCurrentLocation = false;
+            document.getElementById('currentLocationBtn').classList.remove('active');
+            document.getElementById('hotelLocationBtn').classList.add('active');
+            document.getElementById('headerText').textContent = '從日比谷雷姆飯店出發';
+            updateDistancesAndRender();
+        }
+
+        function updateDistancesAndRender() {
+            const startCoords = useCurrentLocation && USER_CURRENT_COORDS ? USER_CURRENT_COORDS : HOTEL_COORDS;
+            
+            allLocationsData.forEach(loc => {
+                loc.distance = calculateDistance(startCoords.lat, startCoords.lng, loc.lat, loc.lng);
+            });
+            
+            allLocationsData.sort((a, b) => a.distance - b.distance);
+            applyFilters();
+        }
 
         // CSV data embedded
         const csvData = `WKT,名稱,說明
@@ -523,8 +667,13 @@ https://kakikaisen-kairi.owst.jp/en/courses/212844987
         }
 
         // Create Google Maps directions link
-        function createGoogleMapsLink(destLat, destLng, destName) {
-            const origin = `${HOTEL_COORDS.lat},${HOTEL_COORDS.lng}`;
+        function createGoogleMapsLink(destLat, destLng, fromCurrent = true) {
+            let origin;
+            if (fromCurrent && USER_CURRENT_COORDS) {
+                origin = `${USER_CURRENT_COORDS.lat},${USER_CURRENT_COORDS.lng}`;
+            } else {
+                origin = `${HOTEL_COORDS.lat},${HOTEL_COORDS.lng}`;
+            }
             const destination = `${destLat},${destLng}`;
             return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=transit`;
         }
@@ -571,20 +720,29 @@ https://kakikaisen-kairi.owst.jp/en/courses/212844987
             }
 
             grid.innerHTML = locations.map(loc => {
-                const distance = calculateDistance(HOTEL_COORDS.lat, HOTEL_COORDS.lng, loc.lat, loc.lng);
-                const mapsLink = createGoogleMapsLink(loc.lat, loc.lng, loc.name);
-                const category = getCategory(loc.name, loc.description);
+                const startCoords = useCurrentLocation && USER_CURRENT_COORDS ? USER_CURRENT_COORDS : HOTEL_COORDS;
+                const distance = loc.distance || calculateDistance(startCoords.lat, startCoords.lng, loc.lat, loc.lng);
+                const currentLocationLink = createGoogleMapsLink(loc.lat, loc.lng, true);
+                const hotelLink = createGoogleMapsLink(loc.lat, loc.lng, false);
+                const category = loc.category || getCategory(loc.name, loc.description);
                 const categoryBadge = getCategoryBadge(category);
+                
+                const distanceText = useCurrentLocation && USER_CURRENT_COORDS ? '距離你' : '距離酒店';
 
                 return `
                     <div class="location-card">
                         <div class="location-name">${loc.name}</div>
                         ${categoryBadge}
-                        <div class="location-distance">📍 距離酒店 ${distance.toFixed(2)} 公里</div>
+                        <div class="location-distance">📍 ${distanceText} ${distance.toFixed(2)} 公里</div>
                         ${loc.description ? `<div class="location-description">${loc.description}</div>` : ''}
-                        <a href="${mapsLink}" target="_blank" class="nav-button">
-                            🗺️ 導航去呢度
-                        </a>
+                        <div class="nav-buttons">
+                            <a href="${currentLocationLink}" target="_blank" class="nav-button">
+                                📍 從當前位置導航
+                            </a>
+                            <a href="${hotelLink}" target="_blank" class="nav-button hotel-route">
+                                🏨 從酒店導航
+                            </a>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -616,7 +774,6 @@ https://kakikaisen-kairi.owst.jp/en/courses/212844987
 
         // Search and filter functionality
         let currentCategory = 'all';
-        let allLocationsData = [];
 
         function setupSearch(allLocations) {
             allLocationsData = allLocations;
@@ -669,10 +826,19 @@ https://kakikaisen-kairi.owst.jp/en/courses/212844987
         document.addEventListener('DOMContentLoaded', () => {
             const locations = parseCSV(csvData);
             
-            // Sort by distance and add category
+            // Add category to locations
+            locations.forEach(loc => {
+                loc.category = getCategory(loc.name, loc.description);
+            });
+            
+            allLocationsData = locations;
+            
+            // Get user's current location
+            getUserLocation();
+            
+            // Initial render with hotel coordinates (will update when user location is available)
             locations.forEach(loc => {
                 loc.distance = calculateDistance(HOTEL_COORDS.lat, HOTEL_COORDS.lng, loc.lat, loc.lng);
-                loc.category = getCategory(loc.name, loc.description);
             });
             locations.sort((a, b) => a.distance - b.distance);
 
