@@ -1,18 +1,859 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-HK">
 <head>
-    <title>Tokyo Travel Guide 2026</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>東京旅遊景點導航</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .hotel-info {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .location-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .location-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .location-distance {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .location-description {
+            color: #666;
+            margin: 15px 0;
+            line-height: 1.6;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.95em;
+        }
+
+        .nav-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .nav-button:hover {
+            transform: scale(1.05);
+        }
+
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .filter-section input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .filter-section input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .category-food { background: #ffebee; color: #c62828; }
+        .category-shop { background: #e8f5e9; color: #2e7d32; }
+        .category-attraction { background: #e3f2fd; color: #1565c0; }
+        .category-hotel { background: #fff3e0; color: #e65100; }
+        .category-cafe { background: #fce4ec; color: #880e4f; }
+
+        .category-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .category-filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .category-filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .category-filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .stats-section {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .stat-item {
+            padding: 8px 15px;
+            background: white;
+            border-radius: 15px;
+            font-size: 0.9em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .location-toggle {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #667eea;
+        }
+
+        .toggle-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #667eea;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .current-location-info {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s;
+            font-size: 0.9em;
+        }
+
+        .nav-button:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-button.hotel-route {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        @media (max-width: 768px) {
+            .location-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+            font-size: 1.5em;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to Tokyo Travel Guide 2026</h1>
-    <h2>Featured Hotel</h2>
-    <div id="hotel-info">
-        <h3>the square hotel GINZA</h3>
-        <p>Coordinates: 35.6722578, 139.7691355</p>
+    <div class="container">
+        <div class="header">
+            <h1>🗾 東京旅遊景點導航</h1>
+            <p id="headerText">正在獲取你的位置...</p>
+            <div class="location-toggle">
+                <button class="toggle-btn active" id="currentLocationBtn" onclick="switchToCurrentLocation()">📍 從當前位置出發</button>
+                <button class="toggle-btn" id="hotelLocationBtn" onclick="switchToHotel()">🏨 從酒店出發</button>
+                <div class="current-location-info" id="currentLocationInfo">正在定位中...</div>
+            </div>
+            <div class="hotel-info">
+                <strong>🏨 住宿酒店：</strong>日比谷雷姆飯店<br>
+                <small>📍 座標：35.6726062, 139.7596706</small>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <div class="category-filters" id="categoryFilters">
+                <button class="category-filter-btn active" data-category="all">📋 全部</button>
+                <button class="category-filter-btn" data-category="food">🍜 美食</button>
+                <button class="category-filter-btn" data-category="shop">🛍️ 購物</button>
+                <button class="category-filter-btn" data-category="attraction">🎡 景點</button>
+                <button class="category-filter-btn" data-category="cafe">☕ Cafe</button>
+                <button class="category-filter-btn" data-category="hotel">🏨 酒店</button>
+            </div>
+            <input type="text" id="searchInput" placeholder="🔍 搜尋景點名稱或說明...">
+            <div class="stats-section" id="statsSection"></div>
+        </div>
+
+        <div id="locationGrid" class="location-grid">
+            <div class="loading">載入中...</div>
+        </div>
     </div>
+
     <script>
-        const HOTEL_COORDS = { lat: 35.6722578, lng: 139.7691355 };
-        const HOTEL_NAME = "the square hotel GINZA";
+        // Hotel coordinates (日比谷雷姆飯店)
+        const HOTEL_COORDS = { lat: 35.6726062, lng: 139.7596706 };
+        const HOTEL_NAME = "日比谷雷姆飯店";
+        
+        // User's current location
+        let USER_CURRENT_COORDS = null;
+        let useCurrentLocation = true; // Default to user's current location
+        let allLocationsData = [];
+
+        // Get user's current location
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        USER_CURRENT_COORDS = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        document.getElementById('currentLocationInfo').innerHTML = 
+                            `<strong>📍 你的位置：</strong>${USER_CURRENT_COORDS.lat.toFixed(6)}, ${USER_CURRENT_COORDS.lng.toFixed(6)}`;
+                        document.getElementById('headerText').textContent = '從你的當前位置出發';
+                        
+                        // Recalculate distances and re-render
+                        if (allLocationsData.length > 0) {
+                            updateDistancesAndRender();
+                        }
+                    },
+                    (error) => {
+                        console.error('無法獲取位置:', error);
+                        document.getElementById('currentLocationInfo').innerHTML = 
+                            '<span style="color: #c62828;">❌ 無法獲取位置，自動切換到酒店出發</span>';
+                        switchToHotel();
+                    }
+                );
+            } else {
+                document.getElementById('currentLocationInfo').innerHTML = 
+                    '<span style="color: #c62828;">❌ 瀏覽器不支援定位</span>';
+                switchToHotel();
+            }
+        }
+
+        // Switch between current location and hotel
+        function switchToCurrentLocation() {
+            if (!USER_CURRENT_COORDS) {
+                alert('無法獲取你的當前位置，請確保已授權位置訪問');
+                return;
+            }
+            useCurrentLocation = true;
+            document.getElementById('currentLocationBtn').classList.add('active');
+            document.getElementById('hotelLocationBtn').classList.remove('active');
+            document.getElementById('headerText').textContent = '從你的當前位置出發';
+            updateDistancesAndRender();
+        }
+
+        function switchToHotel() {
+            useCurrentLocation = false;
+            document.getElementById('currentLocationBtn').classList.remove('active');
+            document.getElementById('hotelLocationBtn').classList.add('active');
+            document.getElementById('headerText').textContent = '從日比谷雷姆飯店出發';
+            updateDistancesAndRender();
+        }
+
+        function updateDistancesAndRender() {
+            const startCoords = useCurrentLocation && USER_CURRENT_COORDS ? USER_CURRENT_COORDS : HOTEL_COORDS;
+            
+            allLocationsData.forEach(loc => {
+                loc.distance = calculateDistance(startCoords.lat, startCoords.lng, loc.lat, loc.lng);
+            });
+            
+            allLocationsData.sort((a, b) => a.distance - b.distance);
+            applyFilters();
+        }
+
+        // CSV data embedded
+        const csvData = `WKT,名稱,說明
+"POINT (139.7596706 35.6726062)",日比谷雷姆飯店,
+"POINT (139.7691355 35.6722578)",the square hotel GINZA,
+"POINT (140.3843215 35.770178)",成田國際機場,
+"POINT (139.7640848 35.6728861)",ALBUM Ginzaten Hair Salon,https://beauty.hotpepper.jp/slnH000446670/
+"POINT (139.6460909 35.745183)",東京華納兄弟哈利波特影城,
+"POINT (139.7019848 35.6586719)",澀谷 SHIBUYA SKY
+,8/1賣22/1飛，買4點飛最好，睇日落。https://www.klook.com/zh-TW/activity/70672-shibuya-sky-tokyo/?spm=SearchResult.SearchResult_LIST&clickId=5127e5b7e0
+"POINT (139.8850779 35.6267108)",東京迪士尼海洋,
+"POINT (139.8803943 35.6328964)",東京迪士尼樂園,
+"POINT (139.7948774 35.7154609)",遊樂園淺草花屋敷,https://www.instagram.com/reels/DAm3sHYPdJR/
+
+東京淺草寺旁，竟然有一個超過百年的遊樂園，360度旋轉的「小星星」實在太刺激🤣
+傳給你想一起去東京旅行的朋友！
+📍東京。淺草花屋敷
+地址：111-0032 東京都台東區淺草2-28-1
+營業時間：10:00-18:00
+"POINT (139.775364 35.62866)",室內樂園Tokyo Joypolis,https://www.instagram.com/reels/DDO5O1OSX4c/
+
+【#GOtrip日本】日本最大級室內樂園Joypolis @tokyojoypolis 就在東京台場！雖然只是室內樂園，不過機動設施非常創新刺激，室內的過山車、U型音樂節拍遊戲和VR遊戲等，部分設施名副其實「刺激到吐」。無論是夏天戶外太熱、下大雨還是冬天太冷，去Joypolis就對了。
+
+Joypolis
+📍地址：1-6-1 Daiba, Minato-ku, Tokyo
+💰門票：$285起（成人通行證）
+
+"POINT (138.7805511 35.4869467)",富士急ハイランド,https://www.instagram.com/p/C_9_Gl9PTqx/?img_index=2
+"POINT (139.7742695 35.6802902)",寶可夢中心東京店DX,
+"POINT (139.7687128 35.6825031)",寶可夢商店 東京站店 好細間
+,
+"POINT (139.7634686 35.6702448)",Uniqlo Ginza Flagship Store,
+"POINT (139.7642627 35.670881)",GU Ginza Store,
+"POINT (139.7639811 35.6707776)",買衫Workman Colors,
+"POINT (139.7757718 35.71088719999999)",買衫coca 上野,買衫：Coca, workman, found good，lakole
+
+"POINT (139.7010593 35.6920044)",買衫Lowrys Farm,
+"POINT (139.7044202 35.6665838)",買衫niko and,
+"POINT (139.7056252 35.6691596)",HUMAN MADE HARAJUKU,
+"POINT (139.6985894 35.6620242)",HUMAN MADE Shibuya PARCO Store,
+"POINT (139.76403 35.67069)",100yen店Seria Exitmelsa Ginza Store,
+"POINT (139.7635327 35.6730642)",3COINS+plus Nishiginza,
+"POINT (139.7584802 35.6669567)",3COINS,
+"POINT (139.7045798 35.6667913)",3COINS Harajuku Main Store,
+"POINT (139.7009471 35.6916756)",3 COINS Lumine Est,
+"POINT (139.7417174 35.6619597)",湯包だし尾粂 Dashi Okume Azabudai Hills,https://www.threads.com/@vivian.yachi.chiang/post/DF2mX3tTdox?hl=zh-hk
+"POINT (139.7208292 35.780056)",關東煮 丸健水產,https://www.instagram.com/reels/C7rAv8Ryle2/
+
+
+排長龍立呑關東煮老舖🍢超多日本人放工去食🙂‍↕️不過最正嘅其實係⋯
+-
+之前去赤羽嗰邊居酒屋🏮所以都嚟過食兩次，都係成日大排長龍！不過因為立食，可以食嘅時間係20分鐘⏱️所以其實等候嘅時間都唔會好耐～關東煮嘅選擇種類都好多，我最鍾意係スタミナ揚😍佢係鱗魚、豆芽同胡蘿蔔mix埋一齊🥕仲有佢哋魚板同埋牛筋好出名，不過成日都賣晒😂
+-
+不過最正嘅係日本酒😎飲剩三份一之後再拎去+50円加湯🤪會變到好鮮甜超級暖身🙂‍↕️
+-
+關東煮價錢大概係百幾至二百幾円一舊～有機會去呢度食居酒屋嘅話，可以食埋關東煮🍢
+=========================
+丸健水産 @marukensuisan
+地址：東京都北区赤羽1-22-8
+營業時間1030-2100
+逢星期一及星期三休息
+
+"POINT (139.7532355 35.7355015)",關東煮 佃忠 田端銀座店,https://www.instagram.com/reels/DQhDshnEqTW/
+
+☃️ 秋冬季必吃！滿載幸福感的關東煮 🍢
+踏入11月東京開始降溫，準備迎接冬天嘅來臨
+有冇人同我一樣去日本一定要食關東煮？
+但好實講便利店嗰啲真係冇得比，仲要勁貴🙂‍↕️
+
+咁之前就搵到一間位於住宅區嘅關東煮舖🤤
+佢唔會係好驚艷嗰種，令你味蕾爆炸嘅味道～
+但佢勝在真係好抵食，簡單已經可以滿足到嘴饞嘅自己
+
+最後令我完全暖到入心嘅係！！！
+婆婆拎住啲柿同提子派俾我哋食🥰
+說好暖心故事，由暖心嘅關東煮開始🤍
+-
+📍
+
+"POINT (139.7731332 35.7068605)",刨冰 PARCO_ya 上野,https://www.instagram.com/p/C4nDzVzyhpv/
+
+上野人氣刨冰店🩷芝士忌廉超濃厚😝Tabelog仲去到3.8分嘅刨冰店🍧
+-
+呢間其實都係20年6月嘅時候就已經去咗，嗰陣時嘅輪候人數都唔少🤣近期上Tabelog睇依家都係依然要等下位，不過好似就唔算要等好耐～
+-
+叫咗佢其中一個招牌御手洗牛奶刨冰🍧佢係有好濃厚嘅芝士忌廉，再加上有醬油(嗰個醬油比較似係整醬油團子嗰隻醬油，唔會超鹹)同煉乳牛奶🥛估唔到鹹鹹甜甜夾埋都幾好，中間仲會有啲紅豆同埋芝士忌廉🤪刨冰很幼細，呢個係正常尺寸，不過其實兩個人食都好夠🤣佢而家仲有啲細啲嘅尺寸🙊
+"POINT (139.7750304 35.7109334)",mega版壽司 三浦三崎港 上野店,https://www.instagram.com/p/CMhHW69pTH-/
+
+勁多料mega版壽司🍣堆到山仔咁高😍
+-
+山盛壽司都係呢到嘅signature🤣全部大大件真心吸引嘅🤤而且價錢唔貴，不過有啲款係限定🤭最貴都係三文魚親子山盛壽司660円，都唔洗HKD50🥳拖羅茸山盛先560円，左口魚邊山盛更加只係260円😭真係名副其實嘅抵到喊🤣大家係東京去開上野可以試下😙快啲save低先😋
+"POINT (139.7755652 35.7096853)",日本串燒店 やきとりの名門 秋吉,日本串燒店 やきとりの名門 秋吉
+https://www.instagram.com/reels/C9eoQCfSmfB/
+
+超抵食日本串燒店🔥計返每串都係100円左右‼️仲要日本全國有百幾間分店，去旅行實有機會試到😏可以save低先喔
+-
+想睇多啲香港、日本美食又或者其他地方旅遊美食嘅資訊✈️就記住follow我哋啦😎 @snappy_hk
+-
+其實嗰次咁啱喺大阪心齋橋，行過見到好多日本人排隊😀本住跟日本人排隊實冇死嘅心態😂 就一路排隊試吓
+-
+佢哋全部都係炭烤，燒完之後店員會直接擺喺你前面嘅鐵板🙂‍↕️個鐵板其實仲係熱辣辣嘅，所以幫到手keep住溫度😀好多款唔同嘅串燒都係五串咁樣計，大概五百幾円左右，計返真係一串百幾円就有交易😏以連鎖店嚟講，我哋上次食嗰間質素都真係唔錯😌唔知唔同分店會唔會質素都唔同啦～
+=========================
+やきとりの名門 秋吉
+https://www.akiyoshi.co.jp/m/shop/
+"POINT (139.7013481 35.6561874)",日本串燒店 やきとりの名門 秋吉,日本串燒店 やきとりの名門 秋吉
+https://www.instagram.com/reels/C9eoQCfSmfB/
+
+超抵食日本串燒店🔥計返每串都係100円左右‼️仲要日本全國有百幾間分店，去旅行實有機會試到😏可以save低先喔
+-
+想睇多啲香港、日本美食又或者其他地方旅遊美食嘅資訊✈️就記住follow我哋啦😎 @snappy_hk
+-
+其實嗰次咁啱喺大阪心齋橋，行過見到好多日本人排隊😀本住跟日本人排隊實冇死嘅心態😂 就一路排隊試吓
+-
+佢哋全部都係炭烤，燒完之後店員會直接擺喺你前面嘅鐵板🙂‍↕️個鐵板其實仲係熱辣辣嘅，所以幫到手keep住溫度😀好多款唔同嘅串燒都係五串咁樣計，大概五百幾円左右，計返真係一串百幾円就有交易😏以連鎖店嚟講，我哋上次食嗰間質素都真係唔錯😌唔知唔同分店會唔會質素都唔同啦～
+=========================
+やきとりの名門 秋吉
+https://www.akiyoshi.co.jp/m/shop/
+"POINT (139.7590785 35.6689531)",日本串燒店 やきとりの名門 秋吉,https://www.instagram.com/reels/C9eoQCfSmfB/
+
+超抵食日本串燒店🔥計返每串都係100円左右‼️仲要日本全國有百幾間分店，去旅行實有機會試到😏可以save低先喔
+-
+想睇多啲香港、日本美食又或者其他地方旅遊美食嘅資訊✈️就記住follow我哋啦😎 @snappy_hk
+-
+其實嗰次咁啱喺大阪心齋橋，行過見到好多日本人排隊😀本住跟日本人排隊實冇死嘅心態😂 就一路排隊試吓
+-
+佢哋全部都係炭烤，燒完之後店員會直接擺喺你前面嘅鐵板🙂‍↕️個鐵板其實仲係熱辣辣嘅，所以幫到手keep住溫度😀好多款唔同嘅串燒都係五串咁樣計，大概五百幾円左右，計返真係一串百幾円就有交易😏以連鎖店嚟講，我哋上次食嗰間質素都真係唔錯😌唔知唔同分店會唔會質素都唔同啦～
+=========================
+やきとりの名門 秋吉
+https://www.akiyoshi.co.jp/m/shop/
+
+"POINT (139.7576239 35.664574)",排隊沾麺 麺屋周郷Menya Sugo,休fri-sat
+"POINT (139.7556075 35.6674001)",排隊沾麺 麺屋周郷Menya Sugo,休fri-sun
+"POINT (139.6665196 35.709135)",牡蠣拉麵店,https://www.instagram.com/reels/C8RWbx6ysx5/
+
+中野免排隊3.69高分牡蠣拉麵店🦪仲係和洋風格😚
+-
+想睇多啲香港、日本美食又或者其他地方旅遊美食嘅資訊✈️就記住follow我哋啦😎 @snappy_hk
+-
+傳統嘅日式拉麵食得多，想食高分嗰啲又要排好耐隊，一係就要上網搶位😮‍💨今次去中野行街買嘢發現咗呢間拉麵🫨都3.69幾高分！但完全唔使排隊😯後尾上tabelog睇返先知原來廚師之前係學咗好多年法國料理🇫🇷所以創作左呢啲帶點fusion嘅拉麵🍜
+-
+【牡蠣x 豆乳ラーメン】¥890
+呢個係佢哋其中一個招牌Menu～個湯係好似Espuma咁整到好creamy嘅泡沫🫧有蠔、豆乳同牛油利🧈而且個醬仲特登整到有花紋好有心機🤗上面仲有隻細細的燒蠔😲同有少少菜，平時食拉麵比較少見到有條菜喺度🤐湯比麵同配料好食😪
+-
+【濃厚牡蠣つけ麺】¥1300
+呢個嗰陣時係限定，佢呢個個沾麵湯係更加濃郁嘅蠔泡沫湯，感覺上係真係blend咗唔少蠔落去😈不過都係嗰句個湯好食過啲麵好多😂😂😂😂【TKG卵牡蠣ご飯】¥400
+正常嘅組合同埋質素～有蠔又有蛋唔會難食🫣😗
+-
+整體我覺得唔使排隊，去開中野又鍾意食蠔嘅話可以試吓🤣不過個湯係好食過啲麵同埋配料🙂‍↕️🫶🏻
+"POINT (139.7019569 35.6825432)",炸蝦專門店 TOKYOエビフライ,https://www.instagram.com/reels/DMAjZmJIAVU/
+
+今天要介紹的餐廳有點特別！它可能就是全世界唯一一間炸蝦專門店，日本電視台也有介紹過。餐廳提供多款日本海蝦，由蝦湯、原條吉列炸蝦、蝦餅，挑戰日式炸蝦料理的多種可能性！
+
+TOKYOエビフライ
+📍日本、〒151-0053 東京都渋谷区代々木１丁目３２−１１ 代々木ラックビル 2階
+營業時間：11:30～14:30、17:00～22:00；星期一定休
+交通：JR「代々木」站徒步1分鐘
+"POINT (139.7316413 35.6648012)",好食排1hr鴨拉麵 入鹿Iruca Tokyo Roppongi,
+"POINT (139.7757314 35.657329)",Bagel TANUKI APPETIZING,
+"POINT (139.7023757 35.6901676)",印度咖喱 Asian Dining YUMMY,https://www.threads.com/@kaoru0312/post/DSOzS7VjzG-?xmt=AQF0cQhIyYmT-dzn6wICmCrkkirlYCM2K9nD0KIP9odjwDCJ3iOektC7sI-dcH8o6NV0eD49&slof=1
+"POINT (139.7044733 35.6594955)",千層水果蛋糕HARBS,
+"POINT (139.7414525 35.6618556)",千層水果蛋糕HARBS,
+"POINT (139.73069 35.6665934)",千層水果蛋糕HARBS,
+"POINT (139.7628443 35.6735982)",千層水果蛋糕HARBS,
+"POINT (139.7729356 35.7067889)",千層水果蛋糕HARBS,
+"POINT (139.7005026 35.6602148)",迴轉壽司Katsu Seibu,排得過呀呢間🤘🏻呢間係美登利嘅迴轉壽司版，一出𨋢就見到條人龍，睇落好似好長，但其實都係等30-45分鐘就食得！每款壽司都好抵食，三文魚籽壽司(500円~$35)喺你面前不斷加不斷加，好似唔駛錢咁！拖羅三食500円、連海膽兩件都係500円，有時仲會有限時特價壽司，會開咪講，當日去有拖羅軍艦兩件(350円~$25)，入口即溶㗎🥰整體壽司食落都好新鮮，100円起，絕對值得排呀！
+窮遊指數：7.5/10
+好味指數：7.5/10
+"POINT (139.7038382 35.6899503)",忌廉烏冬 山下本気うどんYamashita Honki Udon,【白い明太チーズクリームうどん】¥1100 
+明太子芝士白忌廉烏冬
+烏冬係自家製，有咬口QQ又唔會太硬😌（同うどん慎有得比😗呢間又係超好食下次介紹🤩）仲要唔洗擔心太膩，有埋鰹魚湯比你加落去😋超好食啊🥳佢哋其他烏冬口味都好食㗎🤩
+-
+係東京好受歡迎，唔少時候都要排隊👅所以如果你旅行嘅話✈️盡量就避開食飯繁忙時間早少少去啦
+=========================
+"POINT (139.6983369 35.6586363)",忌廉烏冬 山下本気うどんYamashita Honki Udon,【白い明太チーズクリームうどん】¥1100
+明太子芝士白忌廉烏冬
+烏冬係自家製，有咬口QQ又唔會太硬😌（同うどん慎有得比😗呢間又係超好食下次介紹🤩）仲要唔洗擔心太膩，有埋鰹魚湯比你加落去😋超好食啊🥳佢哋其他烏冬口味都好食㗎🤩
+-
+係東京好受歡迎，唔少時候都要排隊👅所以如果你旅行嘅話✈️盡量就避開食飯繁忙時間早少少去啦
+=========================
+"POINT (139.7050077 35.6670267)",沾蕎麥麵+天婦羅蛋飯BASO OMOTESANDO,鴨肉沾蕎麥麵🍜一定要叫埋天婦羅蛋飯！
+-
+今次呢間餐廳係上次去表參道附近食烏冬嘅時候，見到有人排隊
+-
+鴨肉都有得揀普通份量或者多鴨肉🦆基本上多鴨肉就係變8塊double 份量🥰然後有個湯俾你蘸啲蕎麥麵🍜蕎麥麵都有嚼勁🤤同埋枱面仲有啲紫菜蔥蒜等等唔同配料一路俾你可以慢慢加落去，可以有唔同層次唔同食法～鴨肉都嫩的🥰
+-
+另外天婦羅蛋飯一定要叫埋🙂‍↕️個蛋炸到出面有啲金黃，但係中間仲係有啲糖心🤤加埋啲醬油送飯一流😇
+-
+如果大家去開原宿或者表參道行街，唔想排隊排咁耐可以試吓呢間🤘🏿
+【多鴨肉沾蕎麥麵+天婦羅蛋飯】1880円
+【鴨肉沾蕎麥麵】1290円
+"POINT (139.7038616 35.687351)",蕃茄蝦湯沾麵 つけ麺五ノ神製作所,梗係要食【海老トマトつけ麺味玉】¥980 佢地嘅蕃茄蝦湯大受歡迎🌟Tabelog有3.79㗎😏利申我本身唔係特別鍾意蕃茄湯同蝦湯😂但呢間個沾麵湯底令我有改觀😚濃郁得嚟又唔會好膩滯，入面仲有啲車厘茄咁😗湯底有蝦嘅鮮甜，又被蕃茄微酸更帶出個鮮度，更岩夏天食😀麵係靚靚小麥色，比較Q彈，沾湯能力唔錯🤪叉燒中規中矩，少嚡可接受😏個包包帶脆，點湯好正🤓個溏心蛋你望下！真係岩岩好，又入味好正😭食完記住加湯去飲埋佢🤩
+=========================
+つけ麺五ノ神製作所
+地址：東京都渋谷区千駄ヶ谷5-33-16
+電話：03-5379-0203
+時間：11:00→21:00
+不設訂座，新宿三丁目站去會近啲啊🤪係條巷仔到㗎，高島屋旁
+"POINT (139.6985167 35.6591333)",痛風鍋Kaki Kaisen Kairi Shibuya,6日前可book：
+https://kakikaisen-kairi.owst.jp/en/courses/212844987
+日本霸氣足料痛風鍋🤩
+-
+一上枱就已經覺得佢超！誇！張！🤩生蠔×鮟鱇魚肝×蝦×蟹味噌×魷魚×野菜😍之所以叫痛風鍋係因為呢啲食材普林含量高，痛風或尿酸患者不適合過量攝取😩所以就會有呢個名😎咁當然一般人間中食下並無大礙，同時吃到咁多海鮮真是太幸福啦🤭
+-
+鮟鱇魚肝可以就咁食，真係好creamy😏然後食唔晒佢會慢慢成為你湯底嘅一部份😎湯頭又會更加鮮甜😘生蠔🦪大蝦同蟹膏都係冇得輸😭係滿滿又濃郁嘅海鮮鮮味，冬天就更加岩曬😏係tabelog訂位仲有set都係每位¥6000，有埋生蠔，刺身，燒大蝦同雜炊😝如果單叫痛風鍋就每人¥2980 仲有生蠔鍋㗎😳
+"POINT (139.7080074 35.6691908)",HARRY otter cafe,
+"POINT (139.7034869 35.6695903)",HARRY 胡mung cafe,
+"POINT (139.7648186 35.6693617)",油拌麵 油組,油そば可以話係東京本格派嘅麵食文化🤣又即係油拌麵—冇湯嘅拉麵(拌麵?)係丼碗先以麻油和特製的醬油為基底👻鋪上拉麵，佐以青蔥、洋蔥、海苔、叉燒和筍乾😏最後依照自己的口味喜好，淋上幾圈醋和辣油，攪拌後食用嘅🥰比起拉麵，油拌麵只有拉麵三分之二的卡路里，且鹽分大約也只有一半😛好似健康啲咁🙈講下我係東京食嘅呢兩間🤣都係比較多分店㗎，大家都好易搵到去食😬
+-
+油組
+【油そば】¥780
+【スペシャルトッピングB】¥340
+佢呢個會多咗兩塊叉燒，半熟蛋同埋蔥💚麵量就算加大都唔使再加錢🤣佢有教麵量幾多嘅話要落幾多醋同埋醬油😏重點係記住要落多啲蒜蓉😍加埋一齊食真係超香超好食😋夠曬惹味👻
+-
+真係好大碗好抵食，大家嚟東京嘅話可以試吓😬
+"POINT (139.7745204 35.6996279)",串燒 ねぎま三ぞう 秋葉原総本店,
+"POINT (139.7624099 35.6721994)",巨大烏冬 つるとんたん,
+"POINT (139.700803 35.6926516)",The Giant 3D Cat,
+"POINT (139.7036888 35.690681)",日本最大Cat Cafe Mocha Lounge (Shinjuku),
+"POINT (139.647481 35.6488124)",招財貓寺 世田谷 豪德寺,https://www.instagram.com/p/DKCG6o_tGpD/?img_index=8
+"POINT (139.7897739 35.6491207)",teamLab Planets TOKYO DMM,花，要roll褲
+"POINT (139.7432671 35.6620689)",teamLab Borderless: MORI Building DIGITAL ART MUSEUM,
+"POINT (139.8153383 35.7039176)",東京消防庁本所消防署,https://www.instagram.com/reels/C5Kl6L4h-3C/`;
+
+        // Parse CSV
+        function parseCSV(csv) {
+            const lines = csv.trim().split('\n');
+            const headers = lines[0].split(',');
+            const locations = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line.trim()) continue;
+
+                // Parse WKT coordinates
+                const wktMatch = line.match(/POINT \(([0-9.-]+) ([0-9.-]+)\)/);
+                if (!wktMatch) continue;
+
+                const lng = parseFloat(wktMatch[1]);
+                const lat = parseFloat(wktMatch[2]);
+
+                // Extract name and description
+                const remainingPart = line.substring(line.indexOf('",') + 2);
+                const parts = remainingPart.split(',');
+                const name = parts[0].replace(/^"|"$/g, '');
+                const description = parts.slice(1).join(',').replace(/^"|"$/g, '');
+
+                if (name && name !== HOTEL_NAME) { // Skip the hotel itself
+                    locations.push({ name, lat, lng, description });
+                }
+            }
+
+            return locations;
+        }
+
+        // Calculate distance using Haversine formula
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = toRad(lat2 - lat1);
+            const dLng = toRad(lng2 - lng1);
+            
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                     Math.sin(dLng/2) * Math.sin(dLng/2);
+            
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+            
+            return distance;
+        }
+
+        function toRad(degrees) {
+            return degrees * Math.PI / 180;
+        }
+
+        // Create Google Maps directions link
+        function createGoogleMapsLink(destLat, destLng, fromCurrent = true) {
+            let origin;
+            if (fromCurrent && USER_CURRENT_COORDS) {
+                origin = `${USER_CURRENT_COORDS.lat},${USER_CURRENT_COORDS.lng}`;
+            } else {
+                origin = `${HOTEL_COORDS.lat},${HOTEL_COORDS.lng}`;
+            }
+            const destination = `${destLat},${destLng}`;
+            return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=transit`;
+        }
+
+        // Determine category from name
+        function getCategory(name, description) {
+            const text = (name + ' ' + description).toLowerCase();
+            
+            const hotelKeywords = ['hotel', '飯店'];
+            const cafeKeywords = ['cafe', 'otter', 'mung', 'harbs', 'bagel'];
+            const foodKeywords = ['拉麵', '壽司', '烏冬', '串燒', '關東煮', '咖喱', '蛋糕', '刨冰', '沾麺', '鍋', '餐廳', '湯包', '拌麵', '油組', '鴨', '蝦', '牡蠣', '炸蝦', '痛風', '迴轉壽司'];
+            const shopKeywords = ['買衫', 'uniqlo', 'gu', '100yen', '3coins', 'workman', '寶可夢', 'lowrys', 'niko', 'human made', 'seria', 'pokemon', 'store', 'salon'];
+            const attractionKeywords = ['樂園', '影城', 'sky', 'teamlab', '迪士尼', '寺', '消防', '機場', '花屋敷', 'joypolis', '富士急', 'planets', 'borderless', 'cat'];
+
+            if (hotelKeywords.some(k => text.includes(k))) return 'hotel';
+            if (cafeKeywords.some(k => text.includes(k))) return 'cafe';
+            if (foodKeywords.some(k => text.includes(k))) return 'food';
+            if (shopKeywords.some(k => text.includes(k))) return 'shop';
+            if (attractionKeywords.some(k => text.includes(k))) return 'attraction';
+            
+            // 如果名稱包含Hair Salon，歸類為其他(景點)
+            return 'attraction';
+        }
+
+        function getCategoryBadge(category) {
+            const badges = {
+                'food': { text: '🍜 美食', class: 'category-food' },
+                'shop': { text: '🛍️ 購物', class: 'category-shop' },
+                'attraction': { text: '🎡 景點', class: 'category-attraction' },
+                'hotel': { text: '🏨 酒店', class: 'category-hotel' },
+                'cafe': { text: '☕ Cafe', class: 'category-cafe' }
+            };
+            const badge = badges[category] || badges['attraction'];
+            return `<span class="category-badge ${badge.class}">${badge.text}</span>`;
+        }
+
+        // Render locations
+        function renderLocations(locations) {
+            const grid = document.getElementById('locationGrid');
+            
+            if (locations.length === 0) {
+                grid.innerHTML = '<div class="loading">找不到相關景點</div>';
+                return;
+            }
+
+            grid.innerHTML = locations.map(loc => {
+                const startCoords = useCurrentLocation && USER_CURRENT_COORDS ? USER_CURRENT_COORDS : HOTEL_COORDS;
+                const distance = loc.distance || calculateDistance(startCoords.lat, startCoords.lng, loc.lat, loc.lng);
+                const currentLocationLink = createGoogleMapsLink(loc.lat, loc.lng, true);
+                const hotelLink = createGoogleMapsLink(loc.lat, loc.lng, false);
+                const category = loc.category || getCategory(loc.name, loc.description);
+                const categoryBadge = getCategoryBadge(category);
+                
+                const distanceText = useCurrentLocation && USER_CURRENT_COORDS ? '距離你' : '距離酒店';
+
+                // Sanitize HTML to prevent XSS
+                const sanitize = (str) => {
+                    const div = document.createElement('div');
+                    div.textContent = str;
+                    return div.innerHTML;
+                };
+                
+                return `
+                    <div class="location-card">
+                        <div class="location-name">${sanitize(loc.name)}</div>
+                        ${categoryBadge}
+                        <div class="location-distance">📍 ${distanceText} ${distance.toFixed(2)} 公里</div>
+                        ${loc.description ? `<div class="location-description">${sanitize(loc.description)}</div>` : ''}
+                        <div class="nav-buttons">
+                            <a href="${currentLocationLink}" target="_blank" class="nav-button">
+                                📍 從當前位置導航
+                            </a>
+                            <a href="${hotelLink}" target="_blank" class="nav-button hotel-route">
+                                🏨 從酒店導航
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update statistics
+        function updateStats(locations, allLocations) {
+            const statsSection = document.getElementById('statsSection');
+            const categoryCount = {};
+            
+            allLocations.forEach(loc => {
+                categoryCount[loc.category] = (categoryCount[loc.category] || 0) + 1;
+            });
+
+            const categoryNames = {
+                'food': '🍜 美食',
+                'shop': '🛍️ 購物',
+                'attraction': '🎡 景點',
+                'cafe': '☕ Cafe',
+                'hotel': '🏨 酒店'
+            };
+
+            const statsHTML = Object.entries(categoryCount)
+                .map(([cat, count]) => `<div class="stat-item">${categoryNames[cat] || cat}: ${count}</div>`)
+                .join('');
+            
+            statsSection.innerHTML = `<div class="stat-item"><strong>📍 顯示: ${locations.length} / ${allLocations.length}</strong></div>${statsHTML}`;
+        }
+
+        // Search and filter functionality
+        let currentCategory = 'all';
+
+        function setupSearch(allLocations) {
+            allLocationsData = allLocations;
+            const searchInput = document.getElementById('searchInput');
+            
+            searchInput.addEventListener('input', (e) => {
+                applyFilters();
+            });
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = allLocationsData;
+            
+            // Apply category filter
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(loc => loc.category === currentCategory);
+            }
+            
+            // Apply search filter
+            if (searchTerm) {
+                filtered = filtered.filter(loc => 
+                    loc.name.toLowerCase().includes(searchTerm) ||
+                    (loc.description && loc.description.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            renderLocations(filtered);
+            updateStats(filtered, allLocationsData);
+        }
+
+        function setupCategoryFilters() {
+            const filterBtns = document.querySelectorAll('.category-filter-btn');
+            
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    // Add active class to clicked button
+                    btn.classList.add('active');
+                    
+                    currentCategory = btn.dataset.category;
+                    applyFilters();
+                });
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const locations = parseCSV(csvData);
+            
+            // Add category to locations
+            locations.forEach(loc => {
+                loc.category = getCategory(loc.name, loc.description);
+            });
+            
+            allLocationsData = locations;
+            
+            // Get user's current location
+            getUserLocation();
+            
+            // Initial render with hotel coordinates (will update when user location is available)
+            locations.forEach(loc => {
+                loc.distance = calculateDistance(HOTEL_COORDS.lat, HOTEL_COORDS.lng, loc.lat, loc.lng);
+            });
+            locations.sort((a, b) => a.distance - b.distance);
+
+            renderLocations(locations);
+            setupSearch(locations);
+            setupCategoryFilters();
+            updateStats(locations, locations);
+        });
     </script>
 </body>
 </html>
