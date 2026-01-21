@@ -675,7 +675,7 @@ https://kakikaisen-kairi.owst.jp/en/courses/212844987
                 origin = `${HOTEL_COORDS.lat},${HOTEL_COORDS.lng}`;
             }
             const destination = `${destLat},${destLng}`;
-            return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=transit`;
+            return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=transit`;
         }
 
         // Determine category from name
@@ -684,8 +684,8 @@ https://kakikaisen-kairi.owst.jp/en/courses/212844987
             
             const hotelKeywords = ['hotel', '飯店'];
             const cafeKeywords = ['cafe', 'otter', 'mung', 'harbs', 'bagel'];
-            const foodKeywords = ['拉麵', '壽司', '烏冬', '串燒', '關東煮', '咖喱', '蛋糕', '刨冰', '沾麺', '鍋', '餐廳', '湯包', 'salon', '拌麵', '油組', '鴨', '蝦', '牡蠣', '炸蝦', '痛風', '迴轉壽司'];
-            const shopKeywords = ['買衫', 'uniqlo', 'gu', '100yen', '3coins', 'workman', '寶可夢', 'lowrys', 'niko', 'human made', 'seria', 'pokemon', 'store'];
+            const foodKeywords = ['拉麵', '壽司', '烏冬', '串燒', '關東煮', '咖喱', '蛋糕', '刨冰', '沾麺', '鍋', '餐廳', '湯包', '拌麵', '油組', '鴨', '蝦', '牡蠣', '炸蝦', '痛風', '迴轉壽司'];
+            const shopKeywords = ['買衫', 'uniqlo', 'gu', '100yen', '3coins', 'workman', '寶可夢', 'lowrys', 'niko', 'human made', 'seria', 'pokemon', 'store', 'salon'];
             const attractionKeywords = ['樂園', '影城', 'sky', 'teamlab', '迪士尼', '寺', '消防', '機場', '花屋敷', 'joypolis', '富士急', 'planets', 'borderless', 'cat'];
 
             if (hotelKeywords.some(k => text.includes(k))) return 'hotel';
@@ -729,12 +729,19 @@ https://kakikaisen-kairi.owst.jp/en/courses/212844987
                 
                 const distanceText = useCurrentLocation && USER_CURRENT_COORDS ? '距離你' : '距離酒店';
 
+                // Sanitize HTML to prevent XSS
+                const sanitize = (str) => {
+                    const div = document.createElement('div');
+                    div.textContent = str;
+                    return div.innerHTML;
+                };
+                
                 return `
                     <div class="location-card">
-                        <div class="location-name">${loc.name}</div>
+                        <div class="location-name">${sanitize(loc.name)}</div>
                         ${categoryBadge}
                         <div class="location-distance">📍 ${distanceText} ${distance.toFixed(2)} 公里</div>
-                        ${loc.description ? `<div class="location-description">${loc.description}</div>` : ''}
+                        ${loc.description ? `<div class="location-description">${sanitize(loc.description)}</div>` : ''}
                         <div class="nav-buttons">
                             <a href="${currentLocationLink}" target="_blank" class="nav-button">
                                 📍 從當前位置導航
